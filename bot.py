@@ -1,8 +1,9 @@
+import threading
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from math import radians, sin, cos, sqrt, atan2
 
-TOKEN = '8829013760:AAFRTUSv-uGEY6Rr3YO-m9RR5Xy7yEcqhZE'
+TOKEN = os.environ.get('TELEGRAM_TOKEN')
 
 QUESTIONS = [
     {
@@ -152,7 +153,23 @@ def main():
 
     print('🤖 Бот запущен! 🚀')
     app.run_polling()
+def run_web_server():
+    from flask import Flask
+    import os
+    app = Flask(__name__)
 
+    @app.route('/')
+    def home():
+        return "Bot is running!"
+
+    @app.route('/health')
+    def health():
+        return "OK"
+
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
 if __name__ == '__main__':
+    web_thread = threading.Thread(target=run_web_server, daemon=True)
+    web_thread.start()
     main()
